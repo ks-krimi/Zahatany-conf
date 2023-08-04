@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: kartoza/postgis:13.0
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql
+
+  geoserver:
+    image: kartoza/geoserver:2.18.0
+    restart: always
+    ports:
+      - 8600:8080
+    links:
+      - db:db
+    environment:
+      - DB_BACKEND=POSTGRES
+      - HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=gis
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+    volumes:
+      - ./geoserver/data_dir:/opt/geoserver/data_dir:rw
+    depends_on:
+      - db
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - 80:80
+    links:
+      - db:db
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=ny.kalash@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    depends_on:
+      - db
+
+volumes:
+  pgadmin:
+  postgres:
